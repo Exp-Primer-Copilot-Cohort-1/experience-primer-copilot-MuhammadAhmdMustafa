@@ -66,3 +66,9 @@ app.delete('/comments', (req, res) => {
     comments.clear();
     res.send('All comments deleted');
 });
+
+//delete all comments by a specific user
+app.delete('/comments/user/:username', (req, res) => {
+    comments.deleteByUser(req.params.username);
+    res.send('All comments by ' + req.params.username + ' deleted');
+});
