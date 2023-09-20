@@ -1,41 +1,68 @@
 //create web server
 const express = require('express');
 const app = express();
-const router = express.Router();
-const path = require('path');
-//import mongoose
-const mongoose = require('mongoose');
-//import body-parser
+const port = 3000;
+
+//load the comments module
+const comments = require('./comments.js');
+
+//load the body parser module
 const bodyParser = require('body-parser');
-
-//import model
-const Comment = require('./models/comment');
-
-//connect to mongoDB using mongoose
-mongoose.connect('mongodb://localhost:27017/comments', {useNewUrlParser: true});
-
-//configure express app to use body-parser
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-//configure express app to use router
-app.use('/api', router);
+//load the CORS module
+const cors = require('cors');
+app.use(cors());
 
-//set the server to listen on port 8080
-app.listen(8080, function () {
-    console.log(`Server started on port 8080`);
+//set up the server
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+//get all comments
+app.get('/comments', (req, res) => {
+    res.json(comments.getAll());
 });
 
-//configure GET route to fetch all comments
-router.get('/comments', function (req, res) {
-    Comment.find(function (err, comments) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.json(comments);
-        }
-    });
+//get a specific comment
+app.get('/comments/:id', (req, res) => {
+    let comment = comments.getById(req.params.id);
+    if (comment == null) {
+        res.status(404).send('Comment not found');
+    } else {
+        res.json(comment);
+    }
 });
 
-//configure POST route to add new comment
-router.post('/comments')
+//create a comment
+app.post('/comments', (req, res) => {
+    let newComment = comments.add(req.body);
+    res.json(newComment);
+});
+
+//update a comment
+app.put('/comments/:id', (req, res) => {
+    let comment = comments.getById(req.params.id);
+    if (comment == null) {
+        res.status(404).send('Comment not found');
+    } else {
+        comment = comments.update(req.params.id, req.body);
+        res.json(comment);
+    }
+});
+
+//delete a comment
+app.delete('/comments/:id', (req, res) => {
+    let comment = comments.getById(req.params.id);
+    if (comment == null) {
+        res.status(404).send('Comment not found');
+    } else {
+        comments.delete(req.params.id);
+        res.json(comment);
+    }
+});
+
+//delete all comments
+app.delete('/comments', (req, res) => {
+    comments.clear();
+    res.send('All comments deleted');
+});
