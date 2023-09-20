@@ -1,74 +1,45 @@
 //create web server
 const express = require('express');
 const app = express();
-const port = 3000;
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 
-//load the comments module
-const comments = require('./comments.js');
+//connect to database
+const {MongoClient} = require('mongodb');
+const uri = "mongodb://localhost:27017";
+const client = new MongoClient(uri, {useNewUrlParser: true, useUnifiedTopology: true});
 
-//load the body parser module
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+//connect to database
+client.connect(err => {
+    const collection = client.db("test").collection("devices");
+    // perform actions on the collection object
+    client.close();
+});
 
-//load the CORS module
-const cors = require('cors');
-app.use(cors());
-
-//set up the server
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+//create a new comment
+app.post('/comments', (req, res) => {
+    res.send('Create a new comment');
+});
 
 //get all comments
 app.get('/comments', (req, res) => {
-    res.json(comments.getAll());
+    res.send('Get all comments');
 });
 
-//get a specific comment
+//get a comment by id
 app.get('/comments/:id', (req, res) => {
-    let comment = comments.getById(req.params.id);
-    if (comment == null) {
-        res.status(404).send('Comment not found');
-    } else {
-        res.json(comment);
-    }
+    res.send('Get a comment by id');
 });
 
-//create a comment
-app.post('/comments', (req, res) => {
-    let newComment = comments.add(req.body);
-    res.json(newComment);
-});
-
-//update a comment
+//update a comment by id
 app.put('/comments/:id', (req, res) => {
-    let comment = comments.getById(req.params.id);
-    if (comment == null) {
-        res.status(404).send('Comment not found');
-    } else {
-        comment = comments.update(req.params.id, req.body);
-        res.json(comment);
-    }
+    res.send('Update a comment by id');
 });
 
-//delete a comment
+//delete a comment by id
 app.delete('/comments/:id', (req, res) => {
-    let comment = comments.getById(req.params.id);
-    if (comment == null) {
-        res.status(404).send('Comment not found');
-    } else {
-        comments.delete(req.params.id);
-        res.json(comment);
-    }
+    res.send('Delete a comment by id');
 });
 
-//delete all comments
-app.delete('/comments', (req, res) => {
-    comments.clear();
-    res.send('All comments deleted');
-});
-
-//delete all comments by a specific user
-app.delete('/comments/user/:username', (req, res) => {
-    comments.deleteByUser(req.params.username);
-    res.send('All comments by ' + req.params.username + ' deleted');
-});
+//listen on port 3000
+app.listen(3000, () => console.log('Listening on port 3000...'));
