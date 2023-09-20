@@ -38,4 +38,4 @@ router.get('/comments', function (req, res) {
 });
 
 //configure POST route to add new comment
-router.post('/comments'
+router.post('/comments')
